@@ -2,8 +2,6 @@
 #coding=utf-8
 
 import pyrebase
-from sys import exit
-from datetime import datetime
 
 config = {
     'apiKey': "AIzaSyATCyEnI5lObVL3ktgeuJ8tGw7CclYfjwM",
@@ -40,10 +38,9 @@ current_note = {
     'text': note_text
 }
 
-p = db.child('users').child(user['localId']).push({ 'email':user['email'] }, user['idToken'])
-db.child('users').child(user['localId']).child(p['name']).child('notes').push(current_note, user['idToken'])
+db.child('users').child(user['localId']).child('notes').push(current_note, user['idToken'])
 
-result = db.child('users').child(user['localId']).get() # idToken localId
+result = db.child('users').child(user['localId']).child('notes').get() # idToken localId
 
 for i, j in result.val().items():
     print('{}:{}'.format(i, j))
