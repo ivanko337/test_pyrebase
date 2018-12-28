@@ -20,15 +20,15 @@ auth = firebase.auth()
 user1 = ( 'iamloxgigigi@hui.com', '123456' )
 user2 = ( 'v.gritskevich25@gmail.com', 'pisos123' )
 user3 = ( 'pisos@pip.com', '123456')
+user4 = ( 'blabr@rambler.ru', '123456' )
 
 try:
     user = auth.sign_in_with_email_and_password(*user1)
-    for i, j in user.items():
-        print('{}:{}'.format(i, j))
 except:
     print('Invalid email or password')
 
 db = firebase.database()
+
 
 title = input('Enter note\'s title: ')
 note_text = input('Enter note: ')
@@ -41,6 +41,10 @@ current_note = {
 db.child('users').child(user['localId']).child('notes').push(current_note, user['idToken'])
 
 result = db.child('users').child(user['localId']).child('notes').get() # idToken localId
+print(result)
 
-for i, j in result.val().items():
-    print('{}:{}'.format(i, j))
+#accInfo = auth.get_account_info(user['idToken'])
+
+#rUser = auth.create_user_with_email_and_password(*user4)
+#response = auth.send_email_verification(rUser['idToken'])
+#print(response)

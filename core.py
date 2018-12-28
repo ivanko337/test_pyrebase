@@ -15,15 +15,62 @@ class Core:
         }
         firebase = pyrebase.initialize_app(config)
         self.auth = firebase.auth()
-        self.user = self.auth.sign_in_with_email_and_password(email, passw)
+        self.user = self.authUser(email, passw)
         self.database = firebase.database()
 
     def getNotes(self, noteId=None):
-        if noteId:
-            return self.database.child('users').child(self.user['localId']).child('notes').get()
+        if noteId == None:
+            return self.database.child('users').child(self.user['localId']).child('notes').get().val()
         else:
-            return self.database.child('users').child(self.user['localId']).child('notes').child(noteId).get()
+            return self.database.child('users').child(self.user['localId']).child('notes').child(noteId).get().val()
 
     def writeNote(self, title, text):
         note = { 'title':title, 'text':text }
         return self.database.child('users').child(self.user['localId']).child('notes').push(note, self.user['idToken'])
+
+    def authUser(self, email, passw):
+        try:
+            return self.auth.sign_in_with_email_and_password(email, passw)
+        except Exception as e:
+            msg = self.getExceptionMessage(e.args)
+            raise Exception(msg)
+
+    def getExceptionMessage(self, args):
+        emsg = args[1]
+        s = emsg.find('"message":')
+        s = emsg.find(': "', s) + 3
+        e = emsg.find(',', s) - 1
+        return emsg[s:e]
+
+    def register(self, email, passw):
+        try:
+            response = self.auth.create_user_with_email_and_password(email, passw)
+        except Exception as e:
+            msg = self.getExceptionMessage(e.args)
+            raise Exception(msg)
+        self.user = response
+        return response
+
+    def deleteNote(self, noteId):
+        if not isinstance(noteId, str):
+            raise TypeError('noteId must be a str')
+        note = self.database.child('users').child(self.user['localId']).child('notes').child(noteId).get().val()
+        if note == None:
+            raise Exception('Selected note does not exist')
+        note = dict(note.items())
+        self.database.child('users').child(self.user['localId']).child('notes').child(noteId).remove(self.user['idToken'])
+        return self.database.child('users').child(self.user['localId']).child('removed').push(note, self.user['idToken'])
+
+    def redactNote(self, noteId, text=None, titlte=None):
+        if not text and not titlte:
+            raise Exception('You must specify at least one of the optional arguments')
+        note = self.database.child('users').child(self.user['localId']).child('notes').child(noteId).get().val()
+        if note == None:
+            raise Exception('Selected note does not exist')
+        note = list(note.items())
+        newNote = { 'text':note[0][1], 'title':note[1][1] }
+        if text:
+            newNote['text'] = text
+        if titlte:
+            newNote['title'] = titlte
+        return self.database.child('users').child(self.user['localId']).child('notes').child(noteId).update(newNote)
