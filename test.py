@@ -2,6 +2,7 @@
 #coding=utf-8
 
 import pyrebase
+import core
 
 config = {
     'apiKey': "AIzaSyATCyEnI5lObVL3ktgeuJ8tGw7CclYfjwM",
@@ -29,22 +30,20 @@ except:
 
 db = firebase.database()
 
+def getNote():
+    title = input('Enter note\'s title: ')
+    note_text = input('Enter note: ')
 
-title = input('Enter note\'s title: ')
-note_text = input('Enter note: ')
+    current_note = {
+        'title': title,
+        'text': note_text
+    }
 
-current_note = {
-    'title': title,
-    'text': note_text
-}
+    return current_note
 
-db.child('users').child(user['localId']).child('notes').push(current_note, user['idToken'])
+#note = getNote()
 
-result = db.child('users').child(user['localId']).child('notes').get() # idToken localId
-print(result)
+app = core.Core(*user1)
 
-#accInfo = auth.get_account_info(user['idToken'])
-
-#rUser = auth.create_user_with_email_and_password(*user4)
-#response = auth.send_email_verification(rUser['idToken'])
-#print(response)
+r = app.redactNote('-LUqWJAw6floyGvUP5gv', text='pypa')
+print(r)
